@@ -66,3 +66,23 @@ Alternatives considered: configure Asia/Singapore hours in Settings to match the
 **6. V3 — will confirm for real in Phase 3.** Once contact attributes exist, run a real `debug wake-sync` against the Sandbox inbox with an instruction to set one, then read `volty logs --conversation <id>` to see the actual tool call (not just the preview-reply text), confirming the agent can set contact attributes/labels in the customer lane for real contacts.
 
 Haris said "go" — proceeding to Phase 2 (repo + `volty pull`).
+
+## 2026-11-24 01:30 — Phase 2 complete: clean pull, first commit
+Context: PRD section 14 phase 2 gate.
+Decision: Created `web/`, `volty/`, `knowledge/`, `tests/`; `volty pull volty` wrote `AGENTS.md`, `inboxes/sandbox/inbox.ts` + `instructions.md`, `params.ts`, `volty.config.ts` cleanly. `.volty/observed` only flagged 3 unused template automations (appointment-reminder, monthly-broadcast, stalled-deals) — irrelevant to this build, left alone. Checked for secrets (none). Committed (`git init`, first commit on `main`).
+Verification: `volty pull volty` output, `grep -rli key/secret/token volty/` (only generic doc mentions), `git log --oneline`.
+
+## 2026-11-24 02:00 — Phase 3: contact field definitions created (section 7.1)
+Context: PRD section 7.1 — 15 custom contact attributes needed; existing built-ins (`contacts list-attribute-definitions`) were just country/preferred_channel/preferred_language/preferred_name/pronouns/salutation/timezone, no overlap.
+Decision: Created all 15 via `contacts manage-attribute-definition --action create`: `lead_intent`, `company_name`, `industry`, `market`, `team_seats`, `monthly_contacts`, `channels`, `current_tool`, `integrations_needed`, `timeline`, `role`, `lead_score`, `lead_bucket`, `recommended_plan`, `qualification_summary` — types and enum options exactly as PRD 7.1 specifies.
+Note: this op is not file-based (not part of `volty pull`/`push`), so there is no `--dry-run` for it; it executes immediately. Flagged to Haris as a gap in the pull→dry-run→push discipline for this one op type.
+Verification: `contacts list-attribute-definitions` → 22 total (7 built-in + 15 new), each with correct type/options.
+
+## 2026-11-24 02:15 — Phase 3: contact labels created (section 7.2)
+Context: PRD section 7.2 — 9 labels. Found Contact Labels have no separate "create" op; a label is minted by first being applied to a contact (`contacts create --segments` / `contacts update --add-segments`).
+Decision: Created a throwaway contact "Label Seed (safe to delete)" (`cnt:jamvoy3vw7fxmsu`) to mint all 9 labels in one shot.
+Deviation/mistake caught and fixed: first attempt passed `--segments` as one comma-joined string, which the CLI took literally as a single label named `"lead-hot,lead-warm,...,src-voltade-webchat"` instead of 9 separate labels (the flag needs a JSON array or repeated flags, not a bare comma string). Caught immediately via `contacts labels`, fixed with `contacts update --add-segments '["lead-hot","lead-warm",...]'` (real JSON array), confirmed 9 correct labels existed with 1 contact each, then deleted the malformed combined label with `contacts delete-label` (safe — it had 0 contacts left).
+Then ran `contacts describe-label --name <label> --description "..." --auto-add true` for all 9: `lead-hot`, `lead-warm`, `lead-nurture`, `not-a-lead`, `ind-education`, `ind-clinic-spa`, `ind-b2b`, `ind-ecommerce`, `src-voltade-webchat`.
+Important dependency surfaced: each `describe-label --auto-add` response says Volty may only auto-add from "inboxes whose smart Contact Labels switch (smartSegments) is on" — set via `inboxes update`. Our web chat inbox doesn't exist yet (Phase 5); must turn `smartSegments` on for it in Phase 5/6 or auto-add silently does nothing.
+Open item for Haris: the seed contact `cnt:jamvoy3vw7fxmsu` ("Label Seed (safe to delete)") still carries all 9 labels at once (including contradictory ones like lead-hot + not-a-lead) — it's a minting artifact, not a real lead. Left in place since deleting a contact is destructive and needs your explicit yes; will not delete without it.
+Verification: `contacts labels` → exactly 9 labels, 1 contact each, correct spellings; 9× `describe-label` confirmation text.
