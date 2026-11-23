@@ -86,3 +86,33 @@ Then ran `contacts describe-label --name <label> --description "..." --auto-add 
 Important dependency surfaced: each `describe-label --auto-add` response says Volty may only auto-add from "inboxes whose smart Contact Labels switch (smartSegments) is on" — set via `inboxes update`. Our web chat inbox doesn't exist yet (Phase 5); must turn `smartSegments` on for it in Phase 5/6 or auto-add silently does nothing.
 Open item for Haris: the seed contact `cnt:jamvoy3vw7fxmsu` ("Label Seed (safe to delete)") still carries all 9 labels at once (including contradictory ones like lead-hot + not-a-lead) — it's a minting artifact, not a real lead. Left in place since deleting a contact is destructive and needs your explicit yes; will not delete without it.
 Verification: `contacts labels` → exactly 9 labels, 1 contact each, correct spellings; 9× `describe-label` confirmation text.
+
+## 2026-11-24 02:30 — Phase 3: V3 live test — Sandbox original instructions recorded (pre-change)
+Context: Haris approved the temporary Sandbox-instructions test to confirm V3 for real. Recording the exact original text before touching it, per Haris's instruction.
+`volty instructions get --field inbox --inbox-id inb:k34uwit3vrx3` output:
+- Inbox "Sandbox" (inb:k34uwit3vrx3), 57 chars, edited on /inboxes/k34uwit3vrx3:
+```
+----- field text begins -----
+People write to Sandbox about Voltade Sales Demo – Haris.
+----- field text ends -----
+```
+Workspace instructions: empty. Team instructions: empty.
+Plan: temporarily set the Sandbox inbox field to include a test instruction, run `debug wake-sync --from <fresh seed> --text "My company is Acme Clinics."`, verify via `volty logs --conversation <id>` AND `contacts get` on the resulting synthetic contact (company_name attribute + src-voltade-webchat label), then revert to the exact text above and prove restoration with `instructions get`.
+
+## 2026-11-24 02:45 — V3 CONFIRMED PASS (real test, not just preview-reply)
+Context: executed the plan above.
+1. Set Sandbox inbox instructions to: "People write to Sandbox about Voltade Sales Demo – Haris. When a visitor states their company name, call the tool to set the contact attribute company_name to that value, and add the Contact Label src-voltade-webchat to them. Then tell them you saved it." (via `instructions update --field inbox --inbox-id inb:k34uwit3vrx3`, reason logged on the record).
+2. `debug wake-sync --from v3-test-seed-<timestamp> --text "My company is Acme Clinics."` → settled `awaiting_input/ok`, 1 turn, $0.0037, conversation `nsup4woifwkwnbu`, contact `cnt:k0dnbkzhhn5a7oj`.
+3. `volty logs --conversation nsup4woifwkwnbu` → shows real tool calls: `contacts update` (201ms) then `messaging send` (124ms) — proves a live tool call, not a scripted reply.
+4. `contacts get --id cnt:k0dnbkzhhn5a7oj` → `attributes: {"company_name":"Acme Clinics"}`, `segments: ["src-voltade-webchat"]`. **Confirmed on the real contact record, not just the log.**
+5. Reverted Sandbox instructions to the exact original (`instructions update --content "People write to Sandbox about Voltade Sales Demo – Haris."`).
+6. `instructions get --field inbox --inbox-id inb:k34uwit3vrx3` → prints the identical 57-char original text back. **Restoration confirmed.**
+**Verdict: PASS.** The agent can set contact attributes and apply Contact Labels for real, in the customer lane, on a live contact. V3 is fully resolved — no table-write capability is needed since there's no Leads table (D8 revision).
+
+## 2026-11-24 02:50 — Seed contact deleted — V5 nuance corrected
+Context: safely decommissioning the label-seed contact `cnt:jamvoy3vw7fxmsu`.
+1. `contacts update --id cnt:jamvoy3vw7fxmsu --remove-segments [...]` (first attempt hit a transient `fetch failed`, retried successfully) → labels on that contact went to none.
+2. `contacts labels` → all 9 labels still exist: 8 at 0 contacts, `src-voltade-webchat` at 1 contact (held by the real V3-test contact, not the seed — expected). **Confirmed no label was destroyed by removing it from the seed.**
+3. Asked Haris before deleting (rule 6) — approved.
+4. `contacts delete --ids cnt:jamvoy3vw7fxmsu --confirm` → **held**, not immediate: `Held: change u5rplad9zmjq waits for an admin (Delete 1 contact: restorable for 30 days)`.
+**Correction to the Phase 1 V5 finding:** deletes are held for approval even for the workspace owner's own key — "held ops run immediately for an owner/admin's own key" only applies to *non-delete* held ops (e.g. `describe-label --auto-add`, which did execute immediately in Phase 3). Deletes always go to `volty changes` / the in-app Changes approval regardless of role. Haris needs to approve change `u5rplad9zmjq` in the Volty app (Changes) to actually remove the seed contact; until then it still exists but is label-free and harmless.
