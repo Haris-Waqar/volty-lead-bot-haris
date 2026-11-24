@@ -423,9 +423,9 @@ Ten phases (0–9), each ending in a gate where Claude Code stops and reports to
 | 1. Connect and recon | Install CLI, `volty skill install`, `volty auth login --env prod` (Haris approves in browser), `volty help`, `volty docs`, `--help` on every op in this PRD. Resolve unknowns V1–V5 (section 18) | Report: which ops exist, flags, answers to V1–V5. Haris confirms | Tue 12:00 |
 | 2. Repo + pull | Create repo layout (section 4), `volty pull` into `volty/`, start `DECISIONS.md` | Clean pull, files committed | Tue 12:30 |
 | 3. Data model | Contact fields, labels (section 7; no Leads table) | `contacts list-attribute-definitions` shows all fields; `volty changes` approved by Haris | Tue 14:00 |
-| 4. Knowledge | Website source + cheat sheet (section 6) | 10 golden questions answered correctly via `instructions preview-reply` | Tue 16:00 |
+| 4. Knowledge | Website source + cheat sheet (section 6) | 10 golden questions answered correctly via real `debug wake-sync` + `volty logs`/`debug llm-io` (revised 2026-11-24 — `instructions preview-reply` does not reliably call real tools, see 15.1) | Tue 16:00 |
 | 5. Widget + opening | `widgets create`, `read-site`, headline, shortcuts, quick path (section 8) | `chat-flow try` walks all 4 buttons correctly | Tue 18:00 |
-| 6. Instructions + hand-off | Section 12 text, Sales team, hand-off topics, alert (section 10), `compile-cards` | `preview-reply` passes 4 personas; hand-off topics visible in `knowledge-preview` | Tue 21:00 |
+| 6. Instructions + hand-off | Section 12 text, Sales team, hand-off topics, alert (section 10), `compile-cards` | real `debug wake-sync` passes 4 personas (not `preview-reply`, see 15.1); hand-off topics visible in `knowledge-preview` | Tue 21:00 |
 | 7. Demo page | Next.js page, deploy to Vercel, embed script, allow domain (section 13) | Launcher opens on production URL on desktop and phone | Tue 23:00 |
 | 8. End-to-end tests | Section 15 personas through the live page and `debug wake-sync` | All acceptance checks pass; WhatsApp alert received for hot | Wed 08:00 |
 | 9. Docs + submit | `sources refresh`, finish `DECISIONS.md` and `README.md`, submission checklist (section 17) | Haris sends the email | Wed 10:00–12:00 |
@@ -440,7 +440,7 @@ Two test sets: 10 golden questions check knowledge accuracy, and 8 personas chec
 
 ### 15.1 Golden questions
 
-Run through `volty instructions preview-reply` (phase 4) and again on the live page (phase 8). Pass = matches the cited page and the cheat sheet exactly.
+**Revised 2026-11-24:** `instructions preview-reply` was tried first in Phase 4 and fabricated all 10 answers on two separate attempts (one with saved instructions, one with an explicit `--draft` naming the source and cheat sheet) — it does not reliably execute real tool calls, it free-associates a plausible-sounding reply. Run through real `debug wake-sync` (one synthetic contact per question) and read the full reply with `debug llm-io --session-id <id> --turn 1` or `volty logs --conversation <id>` instead, in Phase 4 and again on the live page in Phase 8. Pass = matches the cited page and the cheat sheet exactly.
 
 | # | Question | Must match |
 | --- | --- | --- |
