@@ -39,7 +39,7 @@ export default defineInbox({
   volty: {
     agent: "Volty",
     defaultResponder: true,
-    replyMode: null,
+    replyMode: "live",
     afterHoursReplyMode: null,
     window: null,
     liveForNewContacts: false,
