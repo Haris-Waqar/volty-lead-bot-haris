@@ -114,6 +114,12 @@ export default function Home() {
             </p>
           </li>
         </ol>
+        <a
+          href="https://github.com/Haris-Waqar/volty-lead-bot-haris"
+          className="mt-6 inline-block font-sans text-[13px] tracking-wide text-ink-soft underline decoration-rule decoration-1 underline-offset-4 transition-colors hover:text-accent hover:decoration-accent"
+        >
+          Read the build notes on GitHub
+        </a>
       </section>
 
       <footer className="mt-20 border-l-2 border-rule pl-6 sm:pl-8">
