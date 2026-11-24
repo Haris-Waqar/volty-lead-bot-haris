@@ -14,7 +14,11 @@ export default defineInbox({
   firstResponseMinutes: 60,
   handoff: {
     targetMinutes: 240,
-    topics: [],
+    topics: [
+      "Hot sales lead (score 7+ or override)",
+      "Visitor asks for a person, sales or demo",
+      "Existing customer support issue",
+    ],
     tellContact: true,
   },
   priority: {
@@ -57,6 +61,7 @@ export default defineInbox({
     defaultCountry: "SG",
     allowedDomains: [
       "volty-lead-bot-haris.vercel.app",
+      "voltade.com",
     ],
     font: "inter",
     showBranding: true,
