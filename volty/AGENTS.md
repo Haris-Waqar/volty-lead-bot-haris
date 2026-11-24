@@ -15,7 +15,8 @@ This folder is one Volty workspace's setup as files, written by `volty pull` fro
 To check this folder's code in an editor, `volty init` adds the package.json and tsconfig files it needs; the "Starting a project folder" section of `volty docs` (the CLI guide, also served at /llms.txt) explains them.
 
 Systems connected to this workspace:
-- none
+- voltade-com (website)
+- volty-lead-bot-haris.vercel.app (website)
 
 Run `volty push --dry-run` to see what a push of this folder changes, and `volty push` to deploy it: a push refuses an item that changed in the workspace since your pull, so run `volty pull` again first.
 

@@ -1,6 +1,15 @@
 Read-only. What this workspace holds outside the project as of the last volty pull: data Volty and staff write in the app, and what has no project file yet. Editing this file changes nothing, and volty pull rewrites it.
 
+Sources with no file yet (website, API and sync sources)
+- volty-lead-bot-haris.vercel.app (website)
+- voltade-com (website)
+
 Automations not deployed
 - template-appointment-reminder: no version is running
 - template-monthly-broadcast: no version is running
 - template-stalled-deals: no version is running
+
+Drive files (the workspace Drive, which the project does not hold)
+- /Knowledge/sales-cheat-sheet.md
+- /skills/source-voltade-com/SKILL.md
+- /skills/source-volty-lead-bot-haris-vercel-app/SKILL.md
